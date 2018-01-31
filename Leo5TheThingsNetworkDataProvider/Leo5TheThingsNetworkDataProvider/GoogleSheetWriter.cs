@@ -71,26 +71,26 @@ namespace Leo5TheThingsNetworkDataProvider
 
             Thread.CurrentThread.CurrentCulture = new CultureInfo("de-CH");
 
-            Loramessage bestSignalGateway;
+            Gateway bestSignalGateway;
             string bestSignalGateWayEUI;
             
-            if (msg.metadata.Count > 1)
+            if (msg.metadata.gateways.Count > 1)
             {
-                bestSignalGateway = msg.metadata.OrderByDescending(item => item.rssi).First();
-                bestSignalGateWayEUI = bestSignalGateway.gateway_eui;
+                bestSignalGateway = msg.metadata.gateways.OrderByDescending(item => item.rssi).First();
+                bestSignalGateWayEUI = bestSignalGateway.gtw_id;
 
             }
             else
             {
-                bestSignalGateway = msg.metadata[0];
-                bestSignalGateWayEUI = bestSignalGateway.gateway_eui;
+                bestSignalGateway = msg.metadata.gateways[0];
+                bestSignalGateWayEUI = bestSignalGateway.gtw_id;
             }
 
             string gatewayDetails = JsonConvert.SerializeObject(msg);
 
             var newRow = new List<object>
             {
-                msg.metadata[0].server_time,
+                msg.metadata.gateways[0].time,
                 now.ToString("dd.MM.yyyy HH:mm:ss"),
 
                 payloadInfo.FirstChannel.Type.ToString(),
@@ -101,14 +101,12 @@ namespace Leo5TheThingsNetworkDataProvider
                 payloadInfo.BatteryVoltageInMilliVolt.ToString(CultureInfo.CurrentCulture),
 
                 msg.counter.ToString(),
-                msg.metadata.Count.ToString(),
+                msg.metadata.gateways.Count.ToString(),
                 bestSignalGateWayEUI,
                 
-                bestSignalGateway.lsnr,
-                bestSignalGateway.rssi,
-                bestSignalGateway.datarate,
+
                 bestSignalGateway.latitude,
-                bestSignalGateway.longitude,
+                bestSignalGateway.longtitude,
 
 
                 gatewayDetails

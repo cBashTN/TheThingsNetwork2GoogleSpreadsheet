@@ -17,10 +17,9 @@ namespace Leo5TheThingsNetworkDataProvider
             //broker: staging.thethingsnetwork.org
             //port:     1883
 
-            const string username = "70B3D57ED0000E41"; //App EUI
-            const string devEui = "0004A30B001AF4DA";
+            const string username = "appId"; //App Id
             const string password = "gGSymojL8Ch0ynwtBuUdYxQOdU1cG9HNCaQ/ltigFMk="; //Access Keys (not working version for github)
-            const string topic = "70B3D57ED0000E41/devices/#";
+            const string topic = "appId/devices/#";
             string clientId = Guid.NewGuid().ToString();
 
 
@@ -29,8 +28,8 @@ namespace Leo5TheThingsNetworkDataProvider
 
             try
             {
-                var client = new MqttClient("staging.thethingsnetwork.org");
-                client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
+                var client = new MqttClient("eu.thethings.network");    //Host: <Region>.thethings.network, where <Region> is last part of the handler you registered your application to, e.g. eu.
+				client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
 
                 var subscriptionId = client.Subscribe(new string[] { topic },new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
 
@@ -64,7 +63,7 @@ namespace Leo5TheThingsNetworkDataProvider
             var message = Newtonsoft.Json.JsonConvert.DeserializeObject<LoraObject>(jsonText);
 
             //Decode from Base64
-            byte[] decodedPayload = Convert.FromBase64String(message.payload);
+            byte[] decodedPayload = Convert.FromBase64String(message.payload_raw);
 
             //Log
             LogDecodedPayload(now, decodedPayload, message);
@@ -79,7 +78,7 @@ namespace Leo5TheThingsNetworkDataProvider
         private static void LogDecodedPayload(DateTime now, byte[] decodedPayload, LoraObject message)
         {
             var s = new string(Encoding.UTF8.GetString(decodedPayload).ToCharArray());
-            string text = $"{now} : dev_eui: {message.dev_eui} with payload: {Encoding.Default.GetString(decodedPayload)} ({s}) from {message.metadata.Count} gateways. Nr. {message.counter}\n";
+            string text = $"{now} : dev_eui: {message.dev_id} with payload: {Encoding.Default.GetString(decodedPayload)} ({s}) from {message.metadata.gateways.Count} gateways. Nr. {message.counter}\n";
             Console.WriteLine(text);
             File.AppendAllText(AppConstants.DataStorageFilePath, text);
         }
